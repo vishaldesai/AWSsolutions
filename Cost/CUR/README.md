@@ -14,13 +14,13 @@ Master/Payer Account for consolidated billing and consider cost data as restrict
 3. CUR Config Lambda reads CUR configuration file that has metadata of what data should be delivered to which accounts.
 4. CUR Config Lambda triggers CUR Publish Lambda in async mode for each entry in CUR configuration file.
 5. CUR Publish Lambda assumes cross account role.
-6. CUr Publish Lambda filters and delivers data to linked account S3 bucket.
+6. CUR Publish Lambda filters and delivers data to linked account S3 bucket.
 
 ## Steps
 
 1. Create cross account role in linked account
 2. Create configuraiton entry in [configuration file](code/curpublish.conf) 
 3. Configure CUR reports in Payer account.
-4. Upload files from code folder to S3. Deploy cloudformation stack using [template](code/cur.yaml) to deploy components.
+4. Upload files from [code](code/) folder to S3. Deploy cloudformation stack using [template](code/cur.yaml) to deploy components.
 
 	
