@@ -1,0 +1,12 @@
+{
+    "ReportName": "vishal1",
+    "TimeUnit": "HOURLY",
+	"Compression": "GZIP",
+    "Format": "textORcsv",
+    "AdditionalSchemaElements": [
+        "RESOURCES"
+    ],
+    "S3Bucket": "vishalcost",
+    "S3Prefix": "cur",
+    "S3Region": "us-east-1"
+}
