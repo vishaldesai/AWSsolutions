@@ -7,4 +7,4 @@ Master/Payer Account for consolidated billing and consider cost data as restrict
 
 ## Architecture
 
-
+![](files/solution.png)
