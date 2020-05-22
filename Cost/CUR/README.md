@@ -22,4 +22,5 @@ Master/Payer Account for consolidated billing and consider cost data as restrict
 2. Create configuraiton entry in [configuration file](code/curpublish.conf) 
 3. Configure CUR reports in Payer account.
    * aws cur put-report-definition --report-definition file://../../[cur.json](code/cur.json)
-4. Upload files from [code](code/) folder to S3. Modify default value for all parameters in [template](code/cur.yaml) and create stack to deploy components.
+4. Upload files from [code](code/) folder to S3. Modify default value for all parameters in [cloudformation template](code/cur.yaml) and create stack to deploy components.
+   * aws cloudformation create-stack --stack-name cur --capabilities CAPABILITY_AUTO_EXPAND --template-body file://../../[cur.yaml](code/cur.yaml)
