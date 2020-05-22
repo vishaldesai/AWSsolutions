@@ -18,7 +18,7 @@ Master/Payer Account for consolidated billing and consider cost data as restrict
 
 ## Steps
 
-1. Create cross account role in linked account
+1. Create cross account [role](code/crossaccountiam.txt) in linked account. This role will be used by Lambda in Payer account to push CUR data to linked accounts.
 2. Create configuraiton entry in [configuration file](code/curpublish.conf) 
 3. Configure CUR reports in Payer account.
    * aws cur put-report-definition --report-definition file://../../[cur.json](code/cur.json)
