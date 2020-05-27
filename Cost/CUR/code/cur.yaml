@@ -3,6 +3,17 @@ Transform: 'AWS::Serverless-2016-10-31'
 Description:  CloudFormation Template for Deploying Lambda functions to publish Cost and Usage Data
 
 Parameters:
+
+  # SNSTopicName:
+    # Type: String
+    # Default: "cursns"
+    # Description: SNS topic for CUR Lambda failure notification
+    
+  LambdaRoleName:
+    Type: String
+    Default: "curlambdarole"
+    Description: IAM role for CUR Lambdas
+
   LayerName:
     Type: String
     Default: "awswrangler"
@@ -43,19 +54,19 @@ Parameters:
     Default: "curconfig-6a1d738e-42a9-41ce-9b20-fad28a7d7050.zip"
     Description: CUR Config Lambda URI Key
 
-  LambdaCurConfigRole:
-    Type: String
-    Default: "arn:aws:iam::xxxxxxx:role/adminvishal"
-    Description: CUR Config Lambda Role Arn 
+  # LambdaCurConfigRole:
+    # Type: String
+    # Default: "arn:aws:iam::xxxxxxxxxxxx:role/adminvishal"
+    # Description: CUR Config Lambda Role Arn 
 
   LambdaCurConfigS3EventBucket:
     Type: String
-    Default: "vishal-linked"
+    Default: "vishal-dxc-linked"
     Description: CUR Config S3 Event Bucket
     
   LambdaCurConfigSNS:
     Type: String
-    Default: "arn:aws:sns:us-east-1:xxxxxx:ETL"
+    Default: "arn:aws:sns:us-east-1:xxxxxxxxxxxx:ETL"
     Description: CUR Config Lambda SNS notification        
 
   LambdaCurPublishName:
@@ -70,17 +81,17 @@ Parameters:
 
   LambdaCurPublishUriKey:
     Type: String
-    Default: "curpublish-6c8ee312-8f9f-4606-adf1-64f629dd8101.zip"
+    Default: "curpublish-ec4664fa-9641-4916-8f8e-aeded029f10b.zip"
     Description: CUR Publish Lambda URI Key  
     
-  LambdaCurPublishRole:
-    Type: String
-    Default: "arn:aws:iam::xxxxxx:role/adminvishal"
-    Description: CUR Publish Lambda Role Arn 
+  # LambdaCurPublishRole:
+    # Type: String
+    # Default: "arn:aws:iam::xxxxxxxxxxxx:role/adminvishal"
+    # Description: CUR Publish Lambda Role Arn 
 
   LambdaCurPublishSNS:
     Type: String
-    Default: "arn:aws:sns:us-east-1:xxxxx:ETL"
+    Default: "arn:aws:sns:us-east-1:xxxxxxxxxxxx:ETL"
     Description: CUR Publish Lambda SNS notification        
 
   LambdaCustomResourceName:
@@ -88,10 +99,10 @@ Parameters:
     Default: "curcustom"
     Description: Custom Resource Lambda Name
     
-  LambdaCustomResourceRole:
-    Type: String
-    Default: "arn:aws:iam::xxxx:role/adminvishal"
-    Description: Custom Lambda Role Arn 
+  # LambdaCustomResourceRole:
+    # Type: String
+    # Default: "arn:aws:iam::xxxxxxxxxxxx:role/adminvishal"
+    # Description: Custom Lambda Role Arn 
     
   LogLevel:
     Type: String
@@ -99,6 +110,59 @@ Parameters:
     Description: Lambda Log Level
     
 Resources:
+
+  # snstopic:
+    # Type: AWS::SNS::Topic
+    # Properties:
+      # TopicName: !Ref SNSTopicName
+
+  lambdarolename:
+    Properties:
+      RoleName: !Ref LambdaRoleName
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Sid: ''
+        Version: '2012-10-17'
+      Path: "/"
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:CreateLogGroup
+            Effect: Allow
+            Resource: "*"
+            Sid: Stmt1
+          - Action:
+            - s3:*
+            Effect: Allow
+            Resource: "*"
+            Sid: Stmt2
+          - Action:
+            - lambda:Invoke*
+            Effect: Allow
+            Resource: "*"
+            Sid: Stmt3
+          - Action:
+            - iam:*
+            - sts:*
+            Effect: Allow
+            Resource: "*"
+            Sid: Stmt4
+          - Action:
+            - sns:*
+            Effect: Allow
+            Resource: "*"
+            Sid: Stmt5
+          Version: '2012-10-17'
+        PolicyName: curlambdapolicy
+    Type: AWS::IAM::Role
+    
   awswrangler:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -111,6 +175,7 @@ Resources:
       RetentionPolicy: Retain
 
   curconfig:
+    DependsOn: lambdarolename
     Type: 'AWS::Serverless::Function'
     Properties:
       FunctionName: !Ref LambdaCurConfigName
@@ -119,7 +184,11 @@ Resources:
       Description: ''
       MemorySize: 128
       Timeout: 15
-      Role: !Ref LambdaCurConfigRole
+      #Role: !Ref LambdaCurConfigRole
+      Role:
+        Fn::GetAtt:
+        - lambdarolename
+        - Arn
       CodeUri:
         Bucket: !Ref LambdaCurConfigUriBucket
         Key: !Ref LambdaCurConfigUriKey
@@ -137,6 +206,7 @@ Resources:
           OnFailure:
             Type: SNS
             Destination: !Ref LambdaCurConfigSNS
+            #Destination: !GetAtt snstopic
 
   LambdaInvokePermission:
     Type: 'AWS::Lambda::Permission'
@@ -148,6 +218,7 @@ Resources:
       SourceArn: !Sub 'arn:aws:s3:::${LambdaCurConfigS3EventBucket}'
       
   curpublish:
+    DependsOn: lambdarolename
     Type: 'AWS::Serverless::Function'
     Properties:
       FunctionName: !Ref LambdaCurPublishName
@@ -156,7 +227,11 @@ Resources:
       Description: ''
       MemorySize: 3008
       Timeout: 15
-      Role: !Ref LambdaCurPublishRole
+      #Role: !Ref LambdaCurPublishRole
+      Role:
+        Fn::GetAtt:
+        - lambdarolename
+        - Arn
       Layers:
         - !Ref awswrangler
       CodeUri:
@@ -172,6 +247,7 @@ Resources:
           OnFailure:
             Type: SNS
             Destination: !Ref LambdaCurPublishSNS
+            #Destination: !GetAtt snstopic
  
                 
   CustomResourceLambdaFunction:
@@ -179,7 +255,11 @@ Resources:
     Properties:
       FunctionName: !Ref LambdaCustomResourceName
       Handler: index.lambda_handler
-      Role: !Ref LambdaCustomResourceRole
+      #Role: !Ref LambdaCustomResourceRole
+      Role:
+        Fn::GetAtt:
+        - lambdarolename
+        - Arn
       Code:
         ZipFile: |
 

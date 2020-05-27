@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: This template creates a cross account role for s3 put in an account.
+
+Parameters:
+
+  RoleName:
+    Type: String
+    Default: "xxxxxxxxxxxx"
+    Description: Cross Account Role Name
+    
+  MasterAccountNumber:
+    AllowedPattern: "[0-9]+"
+    Default: "xxxxxxxxxxxxx"
+    Description: The 12 digit AWS account number to grant access to.
+    MaxLength: '12'
+    MinLength: '12'
+    Type: String
+    
+  S3BucketArn:
+    Type: String
+    Default: "arn:aws:s3:::xxxxxxxxxxxx/*"
+    Description: S3 Bucket ARN
+    
+Resources:
+  s3Role:
+    Properties:
+      RoleName: !Ref RoleName
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: sts:AssumeRole
+          Effect: Allow
+          Principal:
+            AWS:
+              Fn::Join:
+              - ''
+              - - 'arn:aws:iam::'
+                - Ref: MasterAccountNumber
+                - ":root"
+          Sid: ''
+        Version: '2012-10-17'
+      Path: "/"
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - s3:Put*
+            Effect: Allow
+            Resource: !Ref S3BucketArn
+            Sid: Stmt1434989080227
+          Version: '2012-10-17'
+        PolicyName: s3Put
+    Type: AWS::IAM::Role
+    
+Outputs:
+  RoleARN:
+    Description: The ARN of the role that can be assumed by the master account.
+    Value:
+      Fn::GetAtt:
+      - s3Role
+      - Arn
