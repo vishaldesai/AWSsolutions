@@ -9,12 +9,13 @@ Master/Payer Account for consolidated billing and consider cost data as restrict
 
 ![](files/solution.png)
 
-1. Configure Cost and Usage Reports data to be delivered to S3 in CSV format.
-2. When CUR files are delivered, S3 events trigger CUR Config Lambda.
-3. CUR Config Lambda reads CUR configuration file that has metadata of what data should be delivered to which accounts.
-4. CUR Config Lambda triggers CUR Publish Lambda in async mode for each entry in CUR configuration file.
-5. CUR Publish Lambda assumes cross account role.
-6. CUR Publish Lambda filters and delivers data to linked account S3 bucket.
+1.	Configure Cost and Usage Reports data to be delivered to S3 in CSV format.
+2.	When CUR files are delivered, S3 PUT event triggers CUR Config Lambda.
+3.	CUR Config Lambda reads CUR configuration file that has metadata of what data should be delivered to which accounts.
+4.	CUR Config Lambda triggers CUR Publish Lambda in async mode for each entry in CUR configuration file.
+5.	CUR Publish Lambda assumes cross account role.
+6.	CUR Publish Lambda filters and delivers CUR data to linked account S3 bucket.
+
 
 ## Steps
 
