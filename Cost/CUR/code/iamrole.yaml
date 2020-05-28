@@ -11,7 +11,7 @@ Parameters:
   MasterAccountNumber:
     AllowedPattern: "[0-9]+"
     Default: "xxxxxxxxxxxxx"
-    Description: The 12 digit AWS account number to grant access to.
+    Description: The 12 digit AWS Payer account number to grant access to.
     MaxLength: '12'
     MinLength: '12'
     Type: String
